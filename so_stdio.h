@@ -24,16 +24,31 @@
 
 #include <stdlib.h>
 
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+
 #define SEEK_SET	0	/* Seek from beginning of file.  */
 #define SEEK_CUR	1	/* Seek from current position.  */
 #define SEEK_END	2	/* Seek from end of file.  */
 
 #define SO_EOF (-1)
+#define BUFFERSIZE 4096
 
 struct _so_file;
 
 typedef struct _so_file {
-    char *file;
+	int fd; // file descriptor
+	int curr_buff_len; // the current buffer capacity
+	char buffer[BUFFERSIZE]; // buffer
+	int index_read; // index in buffer for read op
+	int index_write; // index in buffer for write op
+	int flag; // 0  for r and 1 for w
+	int err; // error flag
+	int eof; // end of file flag
+	int index_curr; // current index in buffer
 } SO_FILE;
 
 FUNC_DECL_PREFIX SO_FILE *so_fopen(const char *pathname, const char *mode);
@@ -67,5 +82,8 @@ FUNC_DECL_PREFIX int so_ferror(SO_FILE *stream);
 
 FUNC_DECL_PREFIX SO_FILE *so_popen(const char *command, const char *type);
 FUNC_DECL_PREFIX int so_pclose(SO_FILE *stream);
+
+ssize_t xread(SO_FILE *f, size_t count);
+ssize_t xwrite(SO_FILE *f, size_t count);
 
 #endif /* SO_STDIO_H */
